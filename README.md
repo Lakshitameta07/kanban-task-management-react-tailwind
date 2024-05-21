@@ -60,6 +60,11 @@ Bonus:
 - Drag and Drop API
 - [React](https://reactjs.org/) - JS library
 - [Redux](https://redux.js.org/) - State management tool
+- Backend Implementation:-
+- [NodeJs](https://nodejs.org/en)
+- [ExpressJs](https://expressjs.com/)
+- [MySql](https://www.mysql.com/)
+- [Sequelize](https://sequelize.org/)
 
 ### Useful resources
 
