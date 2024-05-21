@@ -12,8 +12,9 @@ function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
   const [isElipsisMenuOpen, setIsElipsisMenuOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const boards = useSelector((state) => state.boards);
-  const board = boards.find((board) => board.isActive === true);
-  const columns = board.columns;
+
+  const board = Array.isArray(boards.boards) ? boards.boards.find(board => board.isActive) : null;
+  const columns = board ? board.newColumns : [];
   const col = columns.find((col, i) => i === colIndex);
   const task = col.tasks.find((task, i) => i === taskIndex);
   const subtasks = task.subtasks;
@@ -126,13 +127,13 @@ function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
             Current Status
           </label>
           <select
-            className=" select-status flex-grow px-4 py-2 rounded-md text-sm bg-transparent focus:border-0  border-[1px] border-gray-300 focus:outline-[#635fc7] outline-none"
+            className=" select-status flex-grow px-4 py-2 rounded-md dark:text-white text-sm bg-transparent focus:border-0  border-[1px] border-gray-300 focus:outline-[#635fc7] outline-none"
             value={status}
             onChange={onChange}
           >
             {columns.map((col, index) => (
-              <option className="status-options" key={index}>
-                {col.name}
+              <option className="status-options dark:bg-[#2b2c37] dark:text-white" key={index}>
+                {col?.name}
               </option>
             ))}
           </select>

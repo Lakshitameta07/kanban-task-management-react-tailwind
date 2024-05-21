@@ -21,14 +21,16 @@ function Home() {
     return () => {
       window.removeEventListener("resize", handleWindowResize);
     };
-  });
+  }, []);
+
+
 
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
 
-  const boards = useSelector((state) => state.boards);
-  const board = boards.find((board) => board.isActive === true);
-  const columns = board.columns;
-
+  const boards = useSelector((state) => state.boards.boards);
+  // console.log(boards)
+  const board = Array.isArray(boards) ? boards.find((board) => board.isActive) : null;
+  const columns = board ? board.newColumns : [];
   const [isSideBarOpen, setIsSideBarOpen] = useState(true);
 
   return (
@@ -50,10 +52,12 @@ function Home() {
 
       {/* Columns Section */}
 
-      {columns.length > 0 ? (
+
+      { columns.length > 0 ? (
         <>
-          {columns.map((col, index) => (
-            <Column key={index} colIndex={index} />
+          {Array.isArray(columns)&&columns.map((col, index) => (
+            
+            <Column key={index} colIndex={index} col={col}/>
           ))}
           <div
             onClick={() => {
@@ -69,6 +73,7 @@ function Home() {
           <EmptyBoard type="edit" />
         </>
       )}
+
       {isBoardModalOpen && (
         <AddEditBoardModal
           type="edit"

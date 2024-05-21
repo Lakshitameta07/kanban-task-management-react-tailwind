@@ -3,6 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import crossIcon from "../assets/icon-cross.svg";
 import boardsSlice from "../redux/boardsSlice";
+import { addTask } from "../redux/BackendActions";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+
+const Developers = [
+  { id: 1, name: "John Doe" },
+  { id: 2, name: "Jane Doe" },
+];
 
 function AddEditTaskModal({
   type,
@@ -17,15 +25,22 @@ function AddEditTaskModal({
   const [isValid, setIsValid] = useState(true);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const board = useSelector((state) => state.boards).find(
-    (board) => board.isActive
-  );
-
-  const columns = board.columns;
+  const [assignedDeveloper, setassignedDeveloper] = useState(null);
+  
+  const boards = useSelector((state) => state.boards);
+  const board = Array.isArray(boards.boards) ? boards.boards.find(board => board.isActive) : null;
+  const columns = board ? board.newColumns : [];
+  // console.log('Columns:', columns);
   const col = columns.find((col, index) => index === prevColIndex);
+  // console.log('Col:', col);
+  
   const task = col ? col.tasks.find((task, index) => index === taskIndex) : [];
-  const [status, setStatus] = useState(columns[prevColIndex].name);
+  console.log('This is my task:', task)
+
+  const [columnId,setColumnId] = useState(columns[prevColIndex].id)
+  const [status, setStatus] = useState(columns[prevColIndex].id);
   const [newColIndex, setNewColIndex] = useState(prevColIndex);
+
   const [subtasks, setSubtasks] = useState([
     { title: "", isCompleted: false, id: uuidv4() },
     { title: "", isCompleted: false, id: uuidv4() },
@@ -41,6 +56,7 @@ function AddEditTaskModal({
   };
 
   const onChangeStatus = (e) => {
+    console.log()
     setStatus(e.target.value);
     setNewColIndex(e.target.selectedIndex);
   };
@@ -65,7 +81,9 @@ function AddEditTaskModal({
         return { ...subtask, id: uuidv4() };
       })
     );
+    const dev = Developers.find((dev) => dev.id === task.assignedDeveloperId)
     setTitle(task.title);
+    setassignedDeveloper(dev)
     setDescription(task.description);
     setIsFirstLoad(false);
   }
@@ -75,28 +93,39 @@ function AddEditTaskModal({
   };
 
   const onSubmit = (type) => {
-    if (type === "add") {
-      dispatch(
-        boardsSlice.actions.addTask({
+    const isValid = validate();
+    if (isValid) {
+      if (type === "add") {
+        dispatch(addTask({
           title,
           description,
           subtasks,
-          status,
-          newColIndex,
+          task_status: status,
+          newcolIndex: newColIndex,
+          assignedDeveloperId: assignedDeveloper ? assignedDeveloper.id : null,
+          assignedDeveloperName: assignedDeveloper && assignedDeveloper.name,
+          taskId: uuidv4(),
+          boardId:board.id
         })
-      );
-    } else {
-      dispatch(
-        boardsSlice.actions.editTask({
-          title,
-          description,
-          subtasks,
-          status,
-          taskIndex,
-          prevColIndex,
-          newColIndex,
-        })
-      );
+        );
+      } else {
+        dispatch(
+          boardsSlice.actions.editTask({
+            title,
+            description,
+            subtasks,
+            status,
+            taskIndex,
+            prevColIndex,
+            newColIndex,
+            assignedDeveloperId: assignedDeveloper ? assignedDeveloper.id : null,
+            assignedDeveloperName: assignedDeveloper && assignedDeveloper.name
+          })
+        );
+      }
+      // Close the modal
+      setIsAddTaskModalOpen(false);
+      type === "edit" && setIsTaskModalOpen(false);
     }
   };
 
@@ -137,6 +166,28 @@ function AddEditTaskModal({
             type="text"
             className=" bg-transparent  px-4 py-2 outline-none focus:border-0 rounded-md text-sm  border-[0.5px] border-gray-600 focus:outline-[#635fc7] outline-1  ring-0  "
             placeholder=" e.g Take coffee break"
+          />
+        </div>
+        <div className="mt-8 flex flex-col space-y-3">
+          <label className="text-sm dark:text-white text-gray-500">Assign Developer</label>
+          <Autocomplete
+            value={assignedDeveloper}
+            onChange={(event, newValue) => {
+              setassignedDeveloper(newValue); // Update assignedDeveloper state
+            }}
+
+            options={Developers}
+            getOptionLabel={(option) => option.name}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderInput={(params) => (
+              <TextField
+                //  inputProps={{ className: "test" }}
+                {...params}
+                type="text"
+                label="names"
+                className="rounded-md bg-transparent dark:bg-[#2b2c37] focus:ring-[#635fc7] focus:border-[#635fc7] dark:text-white"
+              />
+            )}
           />
         </div>
 
@@ -180,6 +231,7 @@ function AddEditTaskModal({
                   onDelete(subtask.id);
                 }}
                 className=" m-4 cursor-pointer "
+                alt=""
               />
             </div>
           ))}
@@ -205,11 +257,11 @@ function AddEditTaskModal({
           <select
             value={status}
             onChange={onChangeStatus}
-            className=" select-status flex-grow px-4 py-2 rounded-md text-sm bg-transparent focus:border-0  border-[1px] border-gray-300 focus:outline-[#635fc7] outline-none"
+            className=" select-statuts flex-grow px-4 py-2 rounded-md text-sm bg-transparent focus:border-0  border-[1px] border-gray-300 focus:outline-[#635fc7] outline-none"
           >
-            {columns.map((column, index) => (
-              <option key={index}>{column.name}</option>
-            ))}
+            {columns.map((column, index) =>{ 
+              return<option className="dark:text-white  dark:bg-[#2b2c37]" key={index} value={column.id}>{column.name}</option>
+            })}
           </select>
           <button
             onClick={() => {
@@ -222,7 +274,7 @@ function AddEditTaskModal({
             }}
             className=" w-full items-center text-white bg-[#635fc7] py-2 rounded-full "
           >
-           {type === "edit" ? " save edit" : "Create task"}
+            {type === "edit" ? " save edit" : "Create task"}
           </button>
         </div>
       </div>

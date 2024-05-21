@@ -1,15 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Switch } from "@headlessui/react";
 import boardIcon from "../assets/icon-board.svg";
 import useDarkMode from "../hooks/useDarkMode";
 import darkIcon from "../assets/icon-dark-theme.svg";
 import lightIcon from "../assets/icon-light-theme.svg";
-
 import showSidebarIcon from "../assets/icon-show-sidebar.svg";
 import hideSidebarIcon from "../assets/icon-hide-sidebar.svg";
-
-import boardsSlice from "../redux/boardsSlice";
+import { setBoardActive } from "../redux/BackendActions";
 import AddEditBoardModal from "../modals/AddEditBoardModal";
 
 function Sidebar({ isSideBarOpen, setIsSideBarOpen }) {
@@ -25,12 +23,18 @@ function Sidebar({ isSideBarOpen, setIsSideBarOpen }) {
     setDarkSide(checked);
   };
 
-  const boards = useSelector((state) => state.boards);
+  const boards = useSelector((state) => state.boards.boards);
 
   const toggleSidebar = () => {
     setIsSideBarOpen((curr) => !curr);
-  };
-
+  };   
+const handleBoardIsActive=(board)=>{
+  const activeBoard = boards.map((item)=>item.id===board.id?{...item,isActive:true}:{...item,isActive:false})
+  dispatch(setBoardActive(activeBoard));
+}
+useEffect(()=>{
+  handleBoardIsActive(boards[0])
+},[])
   return (
     <div>
       <div
@@ -51,34 +55,35 @@ function Sidebar({ isSideBarOpen, setIsSideBarOpen }) {
 
               <div className="  dropdown-borad flex flex-col h-[70vh]  justify-between ">
                 <div>
-                  {boards.map((board, index) => (
+                  {boards && boards.map((board, index) => (
                     <div
-                      className={` flex items-baseline space-x-2 px-5 mr-8 rounded-r-full duration-500 ease-in-out py-4 cursor-pointer hover:bg-[#635fc71a] hover:text-[#635fc7] dark:hover:bg-white dark:hover:text-[#635fc7] dark:text-white  ${
+                      className={` flex items-baseline mb-3 space-x-2 px-5 mr-8 rounded-r-full duration-500 ease-in-out py-4 cursor-pointer hover:bg-[#635fc71a] hover:text-[#635fc7] dark:hover:bg-white dark:hover:text-[#635fc7] dark:text-white  ${
                         board.isActive &&
                         " bg-[#635fc7] rounded-r-full text-white mr-8 "
                       } `}
                       key={index}
                       onClick={() => {
-                        dispatch(boardsSlice.actions.setBoardActive({ index }));
+                        handleBoardIsActive(board)
+                        
                       }}
                     >
-                      <img src={boardIcon} className="  filter-white  h-4 " />{" "}
-                      <p className=" text-lg font-bold ">{board.name}</p>
+                      <img src={boardIcon} className="  filter-white  h-4 " alt=""/>{" "}
+                      <p className=" text-xl font-bold ">{board.name}</p>
                     </div>
                   ))}
 
                   <div
-                    className=" flex  items-baseline space-x-2  mr-8 rounded-r-full duration-500 ease-in-out cursor-pointer text-[#635fc7] px-5 py-4 hover:bg-[#635fc71a] hover:text-[#635fc7] dark:hover:bg-white  "
+                    className=" flex mt-4 items-baseline space-x-2   mr-8 rounded-r-full duration-500 ease-in-out cursor-pointer text-[#635fc7] px-5 py-4 hover:bg-[#635fc71a] hover:text-[#635fc7] dark:hover:bg-white  "
                     onClick={() => {
                       setIsBoardModalOpen(true);
                     }}
                   >
-                    <img src={boardIcon} className="   filter-white  h-4 " />
+                    <img src={boardIcon} className="   filter-white  h-4 " alt=""/>
                     <p className=" text-lg font-bold  ">Create New Board </p>
                   </div>
                 </div>
 
-                <div className=" mx-2  p-4 relative space-x-2 bg-slate-100 dark:bg-[#20212c] flex justify-center items-center rounded-lg">
+                <div className=" mx-2 p-4 relative space-x-2 bg-slate-100 dark:bg-[#20212c] flex justify-center items-center rounded-lg">
                   <img src={lightIcon} alt="sun indicating light mode" />
 
                   <Switch
@@ -105,7 +110,7 @@ function Sidebar({ isSideBarOpen, setIsSideBarOpen }) {
           {isSideBarOpen ? (
             <div
               onClick={() => toggleSidebar()}
-              className=" flex  items-center mt-2  absolute bottom-16  text-lg font-bold  rounded-r-full hover:text-[#635FC7] cursor-pointer mr-6 mb-8 px-8 py-4 hover:bg-[#635fc71a] dark:hover:bg-white  space-x-2 justify-center  my-4 text-gray-500 "
+              className=" flex  items-center mt-2  absolute bottom-20  text-lg font-bold  rounded-r-full hover:text-[#635FC7] cursor-pointer mr-6 mb-8 px-8 py-4 hover:bg-[#635fc71a] dark:hover:bg-white  space-x-2 justify-center  my-4 text-gray-500 "
             >
               <img
                 className=" min-w-[20px]"

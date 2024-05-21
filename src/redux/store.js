@@ -1,11 +1,26 @@
 import { configureStore } from "@reduxjs/toolkit";
-import boardsSlice from "./boardsSlice";
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+import backendReducer from './BackendReducers'
 
+// Create a persist configuration
+const persistConfig = {
+  key: 'root', // key for the localStorage object
+  storage, // storage engine
+};
+
+const persistedBoardsReducer = persistReducer(persistConfig, backendReducer);
+
+
+const rootReducer = {
+  boards: persistedBoardsReducer,
+};
 
 const store = configureStore({
-  reducer: {
-    boards: boardsSlice.reducer,
-  }
-})
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
+});
 
-export default store
+const persistor = persistStore(store);
+
+export { store, persistor };

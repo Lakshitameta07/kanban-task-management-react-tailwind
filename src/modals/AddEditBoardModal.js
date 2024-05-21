@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import crossIcon from "../assets/icon-cross.svg";
-import boardsSlice from "../redux/boardsSlice";
 import { v4 as uuidv4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
+import { addBoards, editBoards } from "../redux/BackendActions";
 
-function AddEditBoardModal({ setIsBoardModalOpen, type , }) {
+function AddEditBoardModal({ setIsBoardModalOpen, type, }) {
   const dispatch = useDispatch();
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [name, setName] = useState("");
@@ -13,26 +13,48 @@ function AddEditBoardModal({ setIsBoardModalOpen, type , }) {
     { name: "Doing", tasks: [], id: uuidv4() },
   ]);
   const [isValid, setIsValid] = useState(true);
-  const board = useSelector((state) => state.boards).find(
-    (board) => board.isActive
-  );
+  const board = useSelector((state) => state.boards)
+  const activeBoard = Array.isArray(board.boards) ? board.boards.find(board => board.isActive) : null;
 
-  if (type === "edit" && isFirstLoad) {
-    setNewColumns(
-      board.columns.map((col) => {
-        return { ...col, id: uuidv4() };
-      })
-    );
-    setName(board.name);
+  if (type === "edit" && isFirstLoad && activeBoard) {
+    let columnsToSet;
+    if (Array.isArray(activeBoard)) {
+      columnsToSet = activeBoard[0].newColumns;
+    } else {
+      columnsToSet = activeBoard.newColumns;
+    }
+  
+    // Check if columnsToSet is a string (representing JSON), then parse it
+    if (typeof columnsToSet === 'string') {
+      const parsedColumnsToSet = JSON.parse(columnsToSet);
+      setNewColumns(
+        parsedColumnsToSet.map((col) => {
+          return { ...col };
+        })
+      );
+    } else {
+      // If columnsToSet is already an object, use it directly
+      setNewColumns(
+        columnsToSet.map((col) => {
+          return { ...col };
+        })
+      );
+    }
+  
+    setName(activeBoard.name);
     setIsFirstLoad(false);
   }
+  
+  
+  
+  
 
   const validate = () => {
     setIsValid(false);
     if (!name.trim()) {
       return false;
     }
-    for (let i = 0 ; i < newColumns.length ; i++) {
+    for (let i = 0; i < newColumns.length; i++) {
       if (!newColumns[i].name.trim()) {
         return false;
       }
@@ -57,11 +79,13 @@ function AddEditBoardModal({ setIsBoardModalOpen, type , }) {
   const onSubmit = (type) => {
     setIsBoardModalOpen(false);
     if (type === "add") {
-      dispatch(boardsSlice.actions.addBoard({ name, newColumns }));
+      dispatch(addBoards(name,newColumns));
     } else {
-      dispatch(boardsSlice.actions.editBoard({ name, newColumns }));
+     
+      dispatch(editBoards(activeBoard.id,name, newColumns)); 
     }
   };
+  
 
   return (
     <div
@@ -119,6 +143,7 @@ function AddEditBoardModal({ setIsBoardModalOpen, type , }) {
                   onDelete(column.id);
                 }}
                 className=" m-4 cursor-pointer "
+                alt=""
               />
             </div>
           ))}
@@ -136,7 +161,7 @@ function AddEditBoardModal({ setIsBoardModalOpen, type , }) {
             </button>
             <button
               onClick={() => {
-                const isValid = validate();
+               const isValid = validate();
                 if (isValid === true) onSubmit(type);
               }}
               className=" w-full items-center hover:opacity-70 dark:text-white dark:bg-[#635fc7] mt-8 relative  text-white bg-[#635fc7] py-2 rounded-full"
