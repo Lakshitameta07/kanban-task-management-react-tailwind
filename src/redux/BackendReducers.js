@@ -1,6 +1,5 @@
 const initialState = {
   boards: [],
-  tasks: [],
 };
 
 const backendReducer = (state = initialState, action) => {
@@ -26,12 +25,24 @@ const backendReducer = (state = initialState, action) => {
       };
     }
     case 'EDIT_BOARD':
+      console.log('Payload:', action.payload);
       return {
         ...state,
-        boards: state.boards.map(board =>
-          board.id === action.payload.id ? { ...board, ...action.payload } : board
-        ),
+        boards: state.boards.map(board => {
+          if (board.id === action.payload.id) {
+            return {
+              ...board,
+              name: action.payload.name,
+              columns: action.payload.columns ? action.payload.columns.map(column => {
+                const existingColumn = board.columns.find(col => col.id === column.id);
+                return existingColumn ? { ...existingColumn, ...column } : column;
+              }) : []
+            };
+          }
+          return board;
+        }),
       };
+
     case 'DELETE_BOARD':
       // console.log(action.payload)
       return {
@@ -47,12 +58,12 @@ const backendReducer = (state = initialState, action) => {
       const { ...newTask } = action.payload.task;
       const updatedBoards = Array.isArray(state.boards) ? state.boards.map(board => board.isActive ? {
         ...board,
-        newColumns: Array.isArray(board.newColumns) ? board.newColumns.map(
-          (col, index) => 
-          col.id === newTask.task_status ? {
-          ...col,
-          tasks: [...col.tasks, newTask]
-        } : col) : []
+        columns: Array.isArray(board.columns) ? board.columns.map(
+          (col, index) =>
+            col.id === newTask.columnId ? {
+              ...col,
+              tasks: [...col.tasks, newTask]
+            } : col) : []
       } : board) : [];
 
       console.log('Updated boards:', updatedBoards);
@@ -61,53 +72,89 @@ const backendReducer = (state = initialState, action) => {
         ...state,
         boards: updatedBoards
       };
+
     case 'EDIT_TASK':
-      console.log('Payload in reducer:', action.payload);
+      const { ...updatedTask } = action.payload;
+      console.log('updatedTask:', updatedTask);
+      const updatedboards = Array.isArray(state.boards) ? state.boards.map(board => ({
+        ...board,
+        columns: Array.isArray(board.columns) ? board.columns.map(column => (column.id == updatedTask.columnId ? {
+          ...column,
+          tasks: [...column.tasks, updatedTask]
+        } : {
+          ...column,
+          tasks: column.tasks.filter((task) => task.taskId !== updatedTask.taskId)
+        })) : []
+      })) : [];
+      console.log('Updated boards:', updatedboards);
+
       return {
         ...state,
-        tasks: state.tasks.map(task =>
-          task.taskId === action.payload.taskId ? { ...task, ...action.payload } : task
-        ),
+        boards: updatedboards
       };
+
+
     case 'DELETE_TASK':
+      const { taskId } = action.payload
+      console.log('TaskId:', taskId)
+      const taskBoards = state.boards.map(board => ({
+        ...board,
+        columns: board.columns.map(column => ({
+          ...column,
+          tasks: column.tasks.filter(task => task.taskId !== taskId)
+        }))
+      }))
       return {
         ...state,
-        tasks: state.tasks.filter(task => task.taskId !== action.payload),
+        boards: taskBoards
       };
-    case 'EDIT_SUBTASK':
-      return {
-        ...state,
-        tasks: {
-          ...state.tasks,
-          [action.payload.taskId]: state.tasks[action.payload.taskId].map(task =>
-            task.id === action.payload.subtaskId
-              ? {
+    case 'UPDATE_SUBTASK_STATUS': {
+      const { id, subtaskId, isCompleted, task_status } = action.payload;
+      console.log('taskId:', id, 'SubtaskId:', subtaskId, 'isCompleted:', isCompleted)
+      const updatedBoards = state.boards.map(board => ({
+        ...board,
+        columns: board.columns.map(column => ({
+          ...column,
+          tasks: column.tasks.map(task => {
+            if (task.id === id) {
+              return {
                 ...task,
                 subtasks: task.subtasks.map(subtask =>
-                  subtask.id === action.payload.subtaskId
-                    ? { ...subtask, title: action.payload.title, isCompleted: action.payload.isCompleted }
+                  subtask.id === subtaskId
+                    ? { ...subtask, isCompleted }
                     : subtask
                 )
-              }
-              : task
-          )
-        }
-      };
-    case 'DELETE_SUBTASK':
+              };
+            }
+            return task;
+          })
+        }))
+      }));
+
       return {
         ...state,
-        tasks: {
-          ...state.tasks,
-          [action.payload.taskId]: state.tasks[action.payload.taskId].map(task =>
-            task.id === action.payload.subtaskId
-              ? {
-                ...task,
-                subtasks: task.subtasks.filter(subtask => subtask.id !== action.payload.subtaskId)
-              }
-              : task
-          )
-        }
+        boards: updatedBoards
       };
+    }
+    case 'SET_TASK_STATUS': {
+      const { task } = action.payload;
+      console.log('task:', task)
+      const updatedboards = Array.isArray(state.boards) ? state.boards.map(board => ({
+        ...board,
+        columns: Array.isArray(board.columns) ? board.columns.map(column => (column.id == task.columnId ? {
+          ...column,
+          tasks: [...column.tasks, task]
+        } : {
+          ...column,
+          tasks: column.tasks.filter((oldtask) => oldtask.taskId !== task.taskId)
+        })) : []
+      })) : [];
+      console.log('Updated boards:', updatedboards);
+      return {
+        ...state,
+        boards: updatedboards
+      };
+    }
     default:
       return state;
   }

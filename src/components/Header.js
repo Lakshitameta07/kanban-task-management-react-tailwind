@@ -41,7 +41,7 @@ function Header({ setIsBoardModalOpen, isBoardModalOpen }) {
 
   const onDeleteBtnClick = (e) => {
     if (e.target.textContent === "Delete") {
-      dispatch(deleteBoards(board.id,board.name,board.newColumns));
+      dispatch(deleteBoards(board.id,board.name,board.columns));
       dispatch(setBoardActive({ index: 0 }));
     }
     setIsDeleteModalOpen(false);

@@ -10,7 +10,7 @@ function App() {
   const dispatch = useDispatch();
   const boards = useSelector((state) => state.boards.boards);
   useEffect(() => {
-      dispatch(fetchBoards());
+    dispatch(fetchBoards()) 
     }, [dispatch]);
   
     useEffect(() => {

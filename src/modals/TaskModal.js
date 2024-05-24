@@ -2,19 +2,18 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ElipsisMenu from "../components/ElipsisMenu";
 import elipsis from "../assets/icon-vertical-ellipsis.svg";
-import boardsSlice from "../redux/boardsSlice";
 import Subtask from "../components/Subtask";
 import AddEditTaskModal from "./AddEditTaskModal";
 import DeleteModal from "./DeleteModal";
+import { deleteTask, setTaskStatus } from '../redux/BackendActions'
 
 function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
   const dispatch = useDispatch();
   const [isElipsisMenuOpen, setIsElipsisMenuOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const boards = useSelector((state) => state.boards);
-
   const board = Array.isArray(boards.boards) ? boards.boards.find(board => board.isActive) : null;
-  const columns = board ? board.newColumns : [];
+  const columns = board ? board.columns : [];
   const col = columns.find((col, i) => i === colIndex);
   const task = col.tasks.find((task, i) => i === taskIndex);
   const subtasks = task.subtasks;
@@ -26,7 +25,7 @@ function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
     }
   });
 
-  const [status, setStatus] = useState(task.status);
+  const [status, setStatus] = useState(task.columnId);
   const [newColIndex, setNewColIndex] = useState(columns.indexOf(col));
   const onChange = (e) => {
     setStatus(e.target.value);
@@ -37,20 +36,14 @@ function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
     if (e.target !== e.currentTarget) {
       return;
     }
-    dispatch(
-      boardsSlice.actions.setTaskStatus({
-        taskIndex,
-        colIndex,
-        newColIndex,
-        status,
-      })
+    dispatch(setTaskStatus(task.taskId, { columnId: status })
     );
     setIsTaskModalOpen(false);
   };
 
   const onDeleteBtnClick = (e) => {
     if (e.target.textContent === "Delete") {
-      dispatch(boardsSlice.actions.deleteTask({ taskIndex, colIndex }));
+      dispatch(deleteTask(task.taskId));
       setIsTaskModalOpen(false);
       setIsDeleteModalOpen(false);
     } else {
@@ -132,8 +125,8 @@ function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
             onChange={onChange}
           >
             {columns.map((col, index) => (
-              <option className="status-options dark:bg-[#2b2c37] dark:text-white" key={index}>
-                {col?.name}
+              <option className="status-options dark:bg-[#2b2c37] dark:text-white" key={index} value={col.id}>
+                {col.name}
               </option>
             ))}
           </select>

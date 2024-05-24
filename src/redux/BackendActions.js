@@ -18,11 +18,10 @@ export const fetchBoards = () => async (dispatch) => {
 };
 
 
-export const addBoards = (name, newColumns) => async (dispatch) => {
+export const addBoards = (name, columns) => async (dispatch) => {
     try {
-        const newColumnJSON = JSON.stringify(newColumns);
-        console.log('This is boardData', name, newColumns)
-        const response = await axios.post(`${BASE_URL}/boards`, { name, newColumns: newColumnJSON });
+        console.log('This is boardData', name, columns)
+        const response = await axios.post(`${BASE_URL}/boards`, { name, columns });
         dispatch({ type: ADD_BOARD, payload: response.data });
 
     } catch (error) {
@@ -39,11 +38,11 @@ export const setBoardActive = (activeBoard) => async (dispatch) => {
     }
 };
 
-export const editBoards = (id, name, newColumns) => async (dispatch) => {
-    // console.log(id,name,newColumns)
+export const editBoards = (id, name, columns) => async (dispatch) => {
     try {
-        await axios.put(`${BASE_URL}/boards/${id}`, { id, name, newColumns });
-        dispatch({ type: 'EDIT_BOARD', payload: { id, name, newColumns } });
+        await axios.put(`${BASE_URL}/boards/${id}`, { name, columns });
+        console.log('name:', name, 'columns:', columns)
+        dispatch({ type: 'EDIT_BOARD', payload: { id, name, columns } });
     } catch (error) {
         console.error('Error editing board:', error);
     }
@@ -80,38 +79,52 @@ export const addTask = (taskData) => async (dispatch) => {
     }
 };
 
-export const editTask = (id,taskData) => async (dispatch) => {
+export const editTask = (taskId, taskData) => async (dispatch) => {
+    console.log('This is the id:', taskId, 'This is the taskData:', taskData)
     try {
-        await axios.put(`${BASE_URL}/tasks/${id}`, {taskData});
-        dispatch({ type: 'EDIT_TASK', payload: { taskData } });
+        await axios.put(`${BASE_URL}/board/tasks/${taskId}`, taskData);
+        dispatch({ type: 'EDIT_TASK', payload: { taskId, ...taskData } });
     } catch (error) {
         console.error('error updating task:', error)
     }
 };
 
-export const dragTask = (colIndex, prevColIndex, taskIndex) => ({
-    type: 'DRAG_TASK',
-    payload: { colIndex, prevColIndex, taskIndex }
-});
+export const deleteTask = (taskId, taskData) => async (dispatch) => {
+    try {
+        await axios.delete(`${BASE_URL}/boards/tasks/${taskId}`, taskData);
+        dispatch({ type: 'DELETE_TASK', payload: { taskId, ...taskData } });
+    } catch (error) {
+        console.error('Error deleting task:', error);
+    }
+};
+
+export const dragTask = (colIndex, prevColIndex, taskIndex) => (
+    console.log(colIndex, prevColIndex, taskIndex),
+    {
+        type: 'DRAG_TASK',
+        payload: { colIndex, prevColIndex, taskIndex },
+    });
 
 
-// export const deleteTask = (taskId, colIndex, taskIndex) => async (dispatch) => {
-//     try {
-//         await axios.delete(`http://localhost:1080/api/tasks/${taskId}`, { data: { colIndex, taskIndex } });
-//         dispatch({ type: 'DELETE_TASK', payload: { taskId, colIndex, taskIndex } });
-//     } catch (error) {
-//         console.error('Error deleting task:', error);
-//     }
-// };
+export const setSubtaskCompleted = (id, subtaskId, isCompleted) => async (dispatch) => {
+    try {
+        const response = await axios.put(`${BASE_URL}/boards/tasks/${id}/subtasks/${subtaskId}`, { isCompleted });
+
+        console.log('Response from backend:', response);
+        dispatch({ type: 'UPDATE_SUBTASK_STATUS', payload: response.data });
+    } catch (error) {
+        console.error('Error updating subtask status:', error);
+    }
+};
 
 
-
-export const setSubtaskCompleted = (colIndex, taskIndex, index) => ({
-    type: 'SET_SUBTASK_COMPLETED',
-    payload: { colIndex, taskIndex, index }
-});
-
-export const setTaskStatus = (colIndex, newColIndex, taskIndex, status) => ({
-    type: 'SET_TASK_STATUS',
-    payload: { colIndex, newColIndex, taskIndex, status }
-});
+export const setTaskStatus = (taskId, columnId) => async (dispatch) => {
+    console.log('columnId:', columnId)
+    try {
+        const response = await axios.put(`${BASE_URL}/boards/tasks/${taskId}`, columnId);
+        console.log('Response from backend:', response);
+        dispatch({ type: 'SET_TASK_STATUS', payload: response.data });
+    } catch (error) {
+        console.error('Error updating task status:', error);
+    }
+};  

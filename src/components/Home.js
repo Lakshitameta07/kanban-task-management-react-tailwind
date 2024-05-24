@@ -23,22 +23,21 @@ function Home() {
     };
   }, []);
 
-
-
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
 
-  const boards = useSelector((state) => state.boards.boards);
-  // console.log(boards)
-  const board = Array.isArray(boards) ? boards.find((board) => board.isActive) : null;
-  const columns = board ? board.newColumns : [];
+  const boards = useSelector((state) => state.boards);
+  const activeBoard = Array.isArray(boards.boards)
+    ? boards.boards.find((board) => board.isActive)
+    : null;
+  const columns = activeBoard ? activeBoard.columns : [];
   const [isSideBarOpen, setIsSideBarOpen] = useState(true);
 
   return (
     <div
       className={
         windowSize[0] >= 768 && isSideBarOpen
-          ? " bg-[#f4f7fd]  scrollbar-hide h-screen flex dark:bg-[#20212c]  overflow-x-scroll gap-6  ml-[261px]"
-          : "bg-[#f4f7fd]  scrollbar-hide h-screen flex    dark:bg-[#20212c] overflow-x-scroll gap-6 "
+          ? "bg-[#f4f7fd] scrollbar-hide h-screen flex dark:bg-[#20212c] overflow-x-scroll gap-6 ml-[261px]"
+          : "bg-[#f4f7fd] scrollbar-hide h-screen flex dark:bg-[#20212c] overflow-x-scroll gap-6"
       }
     >
       {windowSize[0] >= 768 && (
@@ -51,27 +50,22 @@ function Home() {
       )}
 
       {/* Columns Section */}
-
-
-      { columns.length > 0 ? (
+      {columns && columns.length > 0 ? (
         <>
-          {Array.isArray(columns)&&columns.map((col, index) => (
-            
-            <Column key={index} colIndex={index} col={col}/>
+          {columns.map((col, index) => (
+            <Column key={index} colIndex={index} col={col} />
           ))}
           <div
             onClick={() => {
               setIsBoardModalOpen(true);
             }}
-            className=" h-screen dark:bg-[#2b2c3740] flex justify-center items-center font-bold text-2xl hover:text-[#635FC7] transition duration-300 cursor-pointer bg-[#E9EFFA] scrollbar-hide mb-2   mx-5 pt-[90px] min-w-[280px] text-[#828FA3] mt-[135px] rounded-lg "
+            className="h-screen dark:bg-[#2b2c3740] flex justify-center items-center font-bold text-2xl hover:text-[#635FC7] transition duration-300 cursor-pointer bg-[#E9EFFA] scrollbar-hide mb-2 mx-5 pt-[90px] min-w-[280px] text-[#828FA3] mt-[135px] rounded-lg"
           >
             + New Column
           </div>
         </>
       ) : (
-        <>
-          <EmptyBoard type="edit" />
-        </>
+        <EmptyBoard type="edit" />
       )}
 
       {isBoardModalOpen && (

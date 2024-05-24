@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import crossIcon from "../assets/icon-cross.svg";
-import boardsSlice from "../redux/boardsSlice";
-import { addTask } from "../redux/BackendActions";
+import { addTask,editTask } from "../redux/BackendActions";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 
 const Developers = [
   { id: 1, name: "John Doe" },
-  { id: 2, name: "Jane Doe" },
+  { id: 2, name: "alex smith" },
 ];
 
 function AddEditTaskModal({
@@ -29,15 +28,10 @@ function AddEditTaskModal({
   
   const boards = useSelector((state) => state.boards);
   const board = Array.isArray(boards.boards) ? boards.boards.find(board => board.isActive) : null;
-  const columns = board ? board.newColumns : [];
-  // console.log('Columns:', columns);
+  const columns = board ? board.columns : [];
   const col = columns.find((col, index) => index === prevColIndex);
-  // console.log('Col:', col);
-  
   const task = col ? col.tasks.find((task, index) => index === taskIndex) : [];
-  console.log('This is my task:', task)
 
-  const [columnId,setColumnId] = useState(columns[prevColIndex].id)
   const [status, setStatus] = useState(columns[prevColIndex].id);
   const [newColIndex, setNewColIndex] = useState(prevColIndex);
 
@@ -105,21 +99,19 @@ function AddEditTaskModal({
           assignedDeveloperId: assignedDeveloper ? assignedDeveloper.id : null,
           assignedDeveloperName: assignedDeveloper && assignedDeveloper.name,
           taskId: uuidv4(),
-          boardId:board.id
+          columnId:status
         })
         );
       } else {
-        dispatch(
-          boardsSlice.actions.editTask({
-            title,
-            description,
-            subtasks,
-            status,
-            taskIndex,
-            prevColIndex,
-            newColIndex,
-            assignedDeveloperId: assignedDeveloper ? assignedDeveloper.id : null,
-            assignedDeveloperName: assignedDeveloper && assignedDeveloper.name
+        dispatch(editTask(task.taskId,{
+          title,
+          description,
+          subtasks,
+          task_status: status,
+          newcolIndex: newColIndex,
+          assignedDeveloperId: assignedDeveloper ? assignedDeveloper.id : null,
+          assignedDeveloperName: assignedDeveloper && assignedDeveloper.name,
+          columnId:status,
           })
         );
       }

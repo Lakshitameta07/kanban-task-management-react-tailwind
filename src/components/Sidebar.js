@@ -83,7 +83,7 @@ useEffect(()=>{
                   </div>
                 </div>
 
-                <div className=" mx-2 p-4 relative space-x-2 bg-slate-100 dark:bg-[#20212c] flex justify-center items-center rounded-lg">
+                <div className=" mx-2 bottom-5 p-4 relative space-x-2 bg-slate-100 dark:bg-[#20212c] flex justify-center items-center rounded-lg">
                   <img src={lightIcon} alt="sun indicating light mode" />
 
                   <Switch
@@ -110,7 +110,7 @@ useEffect(()=>{
           {isSideBarOpen ? (
             <div
               onClick={() => toggleSidebar()}
-              className=" flex  items-center mt-2  absolute bottom-20  text-lg font-bold  rounded-r-full hover:text-[#635FC7] cursor-pointer mr-6 mb-8 px-8 py-4 hover:bg-[#635fc71a] dark:hover:bg-white  space-x-2 justify-center  my-4 text-gray-500 "
+              className=" flex  items-center mt-2  absolute bottom-10  text-lg font-bold  rounded-r-full hover:text-[#635FC7] cursor-pointer mr-6 mb-8 px-8 py-4 hover:bg-[#635fc71a] dark:hover:bg-white  space-x-2 justify-center  my-4 text-gray-500 "
             >
               <img
                 className=" min-w-[20px]"

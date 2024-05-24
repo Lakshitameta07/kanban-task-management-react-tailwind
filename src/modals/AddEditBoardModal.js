@@ -8,7 +8,7 @@ function AddEditBoardModal({ setIsBoardModalOpen, type, }) {
   const dispatch = useDispatch();
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [name, setName] = useState("");
-  const [newColumns, setNewColumns] = useState([
+  const [columns, setNewColumns] = useState([
     { name: "Todo", tasks: [], id: uuidv4() },
     { name: "Doing", tasks: [], id: uuidv4() },
   ]);
@@ -19,9 +19,9 @@ function AddEditBoardModal({ setIsBoardModalOpen, type, }) {
   if (type === "edit" && isFirstLoad && activeBoard) {
     let columnsToSet;
     if (Array.isArray(activeBoard)) {
-      columnsToSet = activeBoard[0].newColumns;
+      columnsToSet = activeBoard[0].columns;
     } else {
-      columnsToSet = activeBoard.newColumns;
+      columnsToSet = activeBoard.columns;
     }
   
     // Check if columnsToSet is a string (representing JSON), then parse it
@@ -54,8 +54,8 @@ function AddEditBoardModal({ setIsBoardModalOpen, type, }) {
     if (!name.trim()) {
       return false;
     }
-    for (let i = 0; i < newColumns.length; i++) {
-      if (!newColumns[i].name.trim()) {
+    for (let i = 0; i < columns.length; i++) {
+      if (!columns[i].name.trim()) {
         return false;
       }
     }
@@ -79,10 +79,10 @@ function AddEditBoardModal({ setIsBoardModalOpen, type, }) {
   const onSubmit = (type) => {
     setIsBoardModalOpen(false);
     if (type === "add") {
-      dispatch(addBoards(name,newColumns));
+      dispatch(addBoards(name,columns));
     } else {
      
-      dispatch(editBoards(activeBoard.id,name, newColumns)); 
+      dispatch(editBoards(activeBoard.id,name, columns)); 
     }
   };
   
@@ -127,7 +127,7 @@ function AddEditBoardModal({ setIsBoardModalOpen, type, }) {
             Board Columns
           </label>
 
-          {newColumns.map((column, index) => (
+          {columns.map((column, index) => (
             <div key={index} className=" flex items-center w-full ">
               <input
                 className=" bg-transparent flex-grow px-4 py-2 rounded-md text-sm  border-[0.5px] border-gray-600 focus:outline-[#635fc7] outline-[1px]  "
