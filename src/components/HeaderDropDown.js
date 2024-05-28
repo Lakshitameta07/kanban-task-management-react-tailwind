@@ -20,6 +20,11 @@ function HeaderDropDown({ setOpenDropdown, setIsBoardModalOpen }) {
     setDarkSide(checked);
   };
 
+  const handleBoardIsActive=(board)=>{
+    const activeBoard = boards.map((item)=>item.id===board.id?{...item,isActive:true}:{...item,isActive:false})
+    dispatch(setBoardActive(activeBoard));
+  }
+
   const boards = useSelector((state) => state.boards.boards);
 
   return (
@@ -48,7 +53,7 @@ function HeaderDropDown({ setOpenDropdown, setIsBoardModalOpen }) {
               } `}
               key={index}
               onClick={() => {
-                dispatch(setBoardActive({ index }));
+                handleBoardIsActive(board)
               }}
             >
               <img src={boardIcon} className="  filter-white  h-4 " />{" "}

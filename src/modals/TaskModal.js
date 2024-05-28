@@ -7,15 +7,15 @@ import AddEditTaskModal from "./AddEditTaskModal";
 import DeleteModal from "./DeleteModal";
 import { deleteTask, setTaskStatus } from '../redux/BackendActions'
 
-function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
+function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen,col,task }) {
   const dispatch = useDispatch();
   const [isElipsisMenuOpen, setIsElipsisMenuOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const boards = useSelector((state) => state.boards);
   const board = Array.isArray(boards.boards) ? boards.boards.find(board => board.isActive) : null;
   const columns = board ? board.columns : [];
-  const col = columns.find((col, i) => i === colIndex);
-  const task = col.tasks.find((task, i) => i === taskIndex);
+  // const col = columns.find((col, i) => i === colIndex);
+  // const task = col.tasks.find((task, i) => i === taskIndex);
   const subtasks = task.subtasks;
 
   let completed = 0;
@@ -33,11 +33,13 @@ function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
   };
 
   const onClose = (e) => {
-    if (e.target !== e.currentTarget) {
+    if (e.target !== e.currentTarget ) {
       return;
     }
-    dispatch(setTaskStatus(task.taskId, { columnId: status })
-    );
+    if(col.id !== status){
+      dispatch(setTaskStatus(task.id, { columnId: status}));
+    }
+    
     setIsTaskModalOpen(false);
   };
 
@@ -104,9 +106,9 @@ function TaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
           {subtasks.map((subtask, index) => {
             return (
               <Subtask
-                index={index}
-                taskIndex={taskIndex}
-                colIndex={colIndex}
+                task={task}
+                col={col}
+                subtask={subtask}
                 key={index}
               />
             );

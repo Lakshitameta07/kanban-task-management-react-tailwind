@@ -80,7 +80,7 @@ app.post('/api/boards', async (req, res) => {
         console.log('New board created:', newBoard);
         console.log('Columns created:', createdColumns);
 
-        res.status(201).json(newBoard);
+        res.status(201).json({board:newBoard,columns:createdColumns});
     } catch (error) {
         console.error('Error creating board:', error);
         res.status(500).json({ error: 'Internal Server error' });
@@ -318,17 +318,17 @@ app.put('/api/boards/tasks/:id/subtasks/:subtaskId', async (req, res) => {
 
 app.put('/api/boards/tasks/:id', async (req, res) => {
     try {
-        const { taskId } = req.params;
+        const { id } = req.params;
         const { columnId } = req.body
-
-        const existingTask = await Tasks.findOne(taskId)
+console.log(columnId,id);
+        const existingTask = await Tasks.findByPk(id)
 
         if (!existingTask) {
             return res.status(404).json({ error: 'Task not found' });
         }
 
         existingTask.columnId = columnId;
-        existingTask.task_status = columnId
+        existingTask.task_status = columnId;
 
         await existingTask.save();
 

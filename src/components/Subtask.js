@@ -1,19 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
 import {setSubtaskCompleted} from '../redux/BackendActions'
 
-function Subtask({ index, taskIndex, colIndex }) {
+function Subtask({ index, taskIndex, colIndex,col,task,subtask }) {
   const dispatch = useDispatch();
-  const boards = useSelector((state) => state.boards);
-  const board = boards.boards.find((board) => board.isActive === true);
-  const col = board?.columns.find((col, i) => i === colIndex);
-  const task = col?.tasks.find((task, i) => i === taskIndex);
-  const subtask = task?.subtasks.find((subtask, i) => i === index);
-  const checked = subtask?.isCompleted;
+  const[checked,setChecked]=useState(subtask?.isCompleted)
 
   const onChange = (e) => {
-    dispatch(setSubtaskCompleted(task.id, subtask.id, !subtask.isCompleted)
+    console.log(e.target.checked);
+    setChecked(!checked);
+    dispatch(setSubtaskCompleted(task.id, subtask.id, e.target.checked)
     );
   };
 
@@ -32,10 +29,5 @@ function Subtask({ index, taskIndex, colIndex }) {
   );
 }
 
-Subtask.propTypes = {
-  index: PropTypes.number.isRequired,
-  taskIndex: PropTypes.number.isRequired,
-  colIndex: PropTypes.number.isRequired,
-};
 
 export default Subtask;

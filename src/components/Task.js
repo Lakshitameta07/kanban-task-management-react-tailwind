@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import TaskModal from "../modals/TaskModal";
 
-function Task({ colIndex, taskIndex }) {
+function Task({ colIndex, taskIndex,task,col }) {
+  console.log(col);
   const boards = useSelector((state) => state.boards.boards);
   const board = boards.find((board) => board.isActive === true);
   const columns =board ?board.columns:[];
-  const col = columns.find((col, i) => i === colIndex);
-  const task = col.tasks.find((task, i) => i === taskIndex);
+  // const col = columns.find((col, i) => i === colIndex);
+  // const task = col.tasks.find((task, i) => i === taskIndex);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-
   let completed = 0;
   let subtasks = task.subtasks;
   subtasks.forEach((subtask) => {
@@ -21,13 +21,15 @@ function Task({ colIndex, taskIndex }) {
   const handleOnDrag = (e) => {
     e.dataTransfer.setData(
       "text",
-      JSON.stringify({ taskIndex, prevColIndex: colIndex })
+      JSON.stringify({ taskIndex, prevColumnId: col.id , taskId: task.id })
     );
+    console.log(e.target.id);
   };
 
   return (
     <div>
       <div
+      id={task.id}
         onClick={() => {
           setIsTaskModalOpen(true);
         }}
@@ -43,7 +45,9 @@ function Task({ colIndex, taskIndex }) {
       </div>
       {isTaskModalOpen && (
         <TaskModal
-          colIndex={colIndex}
+          col={col}
+          task={task}
+          // colIndex={colIndex}
           taskIndex={taskIndex}
           setIsTaskModalOpen={setIsTaskModalOpen}
         />

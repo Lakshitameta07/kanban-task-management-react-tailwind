@@ -1,8 +1,8 @@
 import { shuffle } from "lodash";
 import React, { useEffect, useState } from "react";
 import { useDispatch} from "react-redux";
-import boardsSlice from "../redux/boardsSlice";
 import Task from "./Task";
+import { dragTask } from "../redux/BackendActions";
 
 function Column({ colIndex,col}) {
   const colors = [
@@ -27,16 +27,21 @@ function Column({ colIndex,col}) {
 
 
 
-  const handleOnDrop = (e) => {
-    const { prevColIndex, taskIndex } = JSON.parse(
+  const handleOnDrop = (e,target) => {
+    console.log(e.target.id)
+    const { prevColumnId, taskIndex, taskId } = JSON.parse(
       e.dataTransfer.getData("text")
     );
-
-    if (colIndex !== prevColIndex) {
+    if(prevColumnId !==e.target.id){
       dispatch(
-        boardsSlice.actions.dragTask({ colIndex, prevColIndex, taskIndex })
-      );
+            dragTask({ prevColumnId, id:taskId },{ columnId: e.target.id})
+          );
     }
+    // if (colIndex !== prevColIndex) {
+    //   dispatch(
+    //     dragTask({ colIndex, prevColIndex, taskIndex })
+    //   );
+    // }
   };
 
   const handleOnDragOver = (e) => {
@@ -45,9 +50,10 @@ function Column({ colIndex,col}) {
 
   return (
     <div
+      id={col.id}
       onDrop={handleOnDrop}
       onDragOver={handleOnDragOver}
-      className="scrollbar-hide   mx-5 pt-[90px] min-w-[280px]"
+      className="scrollbar-hide mx-5 pt-[90px] min-w-[280px]"
     >
       <p className=" font-semibold flex  items-center  gap-2 tracking-widest md:tracking-[.2em] text-[#828fa3]">
         <span className={`rounded-full w-4 h-4 ${color} `} />
@@ -55,7 +61,7 @@ function Column({ colIndex,col}) {
       </p>
 
       {col.tasks.map((task, index) => (
-        <Task key={index} taskIndex={index} colIndex={colIndex} />
+        <Task task={task} key={index} taskIndex={index} col={col}  />
       ))}
     </div>
   );

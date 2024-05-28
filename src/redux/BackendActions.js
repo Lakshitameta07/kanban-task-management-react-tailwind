@@ -22,6 +22,7 @@ export const addBoards = (name, columns) => async (dispatch) => {
     try {
         console.log('This is boardData', name, columns)
         const response = await axios.post(`${BASE_URL}/boards`, { name, columns });
+        console.log('response:', response.data)
         dispatch({ type: ADD_BOARD, payload: response.data });
 
     } catch (error) {
@@ -98,13 +99,15 @@ export const deleteTask = (taskId, taskData) => async (dispatch) => {
     }
 };
 
-export const dragTask = (colIndex, prevColIndex, taskIndex) => (
-    console.log(colIndex, prevColIndex, taskIndex),
-    {
-        type: 'DRAG_TASK',
-        payload: { colIndex, prevColIndex, taskIndex },
-    });
-
+export const dragTask = ({ prevColumnId, id},column) =>async(dispatch) => {
+    try{
+       const {data:{task}}= await axios.put(`${BASE_URL}/boards/tasks/${id}`, column);
+       const {columnId}=column
+        dispatch({ type: 'DRAG_TASK', payload: {columnId, prevColumnId, taskId:id,draggedTask:task} });
+    }catch(error){
+        console.error('Error dragging task:', error);
+    } 
+}
 
 export const setSubtaskCompleted = (id, subtaskId, isCompleted) => async (dispatch) => {
     try {
@@ -118,10 +121,9 @@ export const setSubtaskCompleted = (id, subtaskId, isCompleted) => async (dispat
 };
 
 
-export const setTaskStatus = (taskId, columnId) => async (dispatch) => {
-    console.log('columnId:', columnId)
+export const setTaskStatus = (id, columnId) => async (dispatch) => {
     try {
-        const response = await axios.put(`${BASE_URL}/boards/tasks/${taskId}`, columnId);
+        const response = await axios.put(`${BASE_URL}/boards/tasks/${id}`, columnId);
         console.log('Response from backend:', response);
         dispatch({ type: 'SET_TASK_STATUS', payload: response.data });
     } catch (error) {

@@ -10,7 +10,14 @@ const backendReducer = (state = initialState, action) => {
         boards: action.payload,
       };
     case 'ADD_BOARD':
-      const { ...newBoard } = action.payload;
+      const {board,columns } = action.payload;
+const newBoard = {
+  ...board,
+  columns: columns.map(column => ({
+    ...column,
+    tasks: [],
+  })),
+};
       return {
         ...state,
         boards: [...state.boards, newBoard],
@@ -80,7 +87,7 @@ const backendReducer = (state = initialState, action) => {
         ...board,
         columns: Array.isArray(board.columns) ? board.columns.map(column => (column.id == updatedTask.columnId ? {
           ...column,
-          tasks: [...column.tasks, updatedTask]
+          tasks: column.tasks.map(task => (task.taskId == updatedTask.taskId ? updatedTask : task))
         } : {
           ...column,
           tasks: column.tasks.filter((task) => task.taskId !== updatedTask.taskId)
@@ -109,8 +116,7 @@ const backendReducer = (state = initialState, action) => {
         boards: taskBoards
       };
     case 'UPDATE_SUBTASK_STATUS': {
-      const { id, subtaskId, isCompleted, task_status } = action.payload;
-      console.log('taskId:', id, 'SubtaskId:', subtaskId, 'isCompleted:', isCompleted)
+      const { id, subtaskId, isCompleted } = action.payload;
       const updatedBoards = state.boards.map(board => ({
         ...board,
         columns: board.columns.map(column => ({
@@ -152,7 +158,33 @@ const backendReducer = (state = initialState, action) => {
       console.log('Updated boards:', updatedboards);
       return {
         ...state,
-        boards: updatedboards
+        boards: updatedboards,
+      };
+    }
+    case 'DRAG_TASK': {
+      const { columnId, prevColumnId, taskId,draggedTask } = action.payload;
+      const updatedBoards = state.boards.map(board => ({
+        ...board,
+        columns: board.columns.map(column => {
+          if (column.id == prevColumnId) {
+            return {
+              ...column,
+              tasks: column.tasks.filter(task => task.id !== taskId)
+            };
+          }
+          if (column.id == columnId) {
+            return {
+              ...column,
+              tasks: [...column.tasks,draggedTask]
+            };
+          }
+          return column;
+        })
+      }));
+console.log(updatedBoards)
+      return {
+        ...state,
+        boards: updatedBoards,
       };
     }
     default:
